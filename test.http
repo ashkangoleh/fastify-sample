@@ -1,0 +1,27 @@
+### GET index
+GET http://localhost:5000/ HTTP/1.1
+
+### GET items
+GET http://localhost:5000/coins HTTP/1.1
+
+### GET single item
+GET http://localhost:5000/coin/1 HTTP/1.1
+
+### ADD item
+POST http://localhost:5000/coin HTTP/1.1
+content-type: application/json;
+
+{
+  "name": "DOG"
+}
+
+### DELETE item
+DELETE http://localhost:5000/coin/2 HTTP/1.1
+
+### UPDATE item
+PUT http://localhost:5000/coin/1 HTTP/1.1
+content-type: application/json;
+
+{
+  "name": "updated item"
+}
