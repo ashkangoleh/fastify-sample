@@ -25,3 +25,7 @@ content-type: application/json;
 {
   "name": "updated item"
 }
+
+
+### GET history
+GET http://localhost:5000/history HTTP/1.1

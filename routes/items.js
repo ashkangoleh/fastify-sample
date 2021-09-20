@@ -1,4 +1,4 @@
-const {getItems, getSingleItem, addItem,deleteItem,updateItem} = require('../controllers/items')
+const {getItems, getSingleItem, addItem, deleteItem, updateItem, periodHistoryAmount} = require('../controllers/items')
 const Items = {
     type: "object",
     properties: {
@@ -43,9 +43,17 @@ const postItemOpts = {
 };
 const deleteItemOpts = {
     schema: {
+        body: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+                id: {type: 'string'},
+                name: {type: 'string',}
+            }
+        },
         response: {
-            200:{
-                type:'object',
+            200: {
+                type: 'object',
                 properties: {
                     message: {type: 'string'}
                 }
@@ -56,27 +64,39 @@ const deleteItemOpts = {
 };
 const updateItemOpts = {
     schema: {
+        body: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+                id: {type: 'string'},
+                name: {type: 'string',},
+                update_name: {type: 'string'}
+            }
+        },
         response: {
             200: Items,
         },
     },
     handler: updateItem
 };
+const historyOts = {
+    handler: periodHistoryAmount
+}
 
 function itemRoutes(app, options, done) {
     // GET all items
     // app.get("/coins", getItemsOpts);
     app.get("/coins", getItems);
-
     // GET single item
     app.get("/coin/:id", getItemOpts);
     // Add item
     app.post("/coin", postItemOpts)
     // Delete item
-    app.delete("/coin/:id", deleteItemOpts)
+    // app.delete("/coin/:id", deleteItemOpts) // params request
+    app.delete("/coin", deleteItemOpts) // body request {"name":"name"}
     // UPDATE item
-    app.put("/coin/:id", updateItemOpts)
-
+    app.put("/coin", updateItemOpts)
+    app.get("/history", historyOts)
     done();
 }
 
