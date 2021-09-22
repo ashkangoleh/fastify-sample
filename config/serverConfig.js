@@ -2,24 +2,37 @@ const fastify = require("fastify")({
     logger: true,
     // http2: true
 });
+const autoload = require('fastify-autoload')
+const path = require('path')
 const PORT = 5000;
-// routes modules
-const itemsRoutes = require("../routes/items");
-// end line of routes
 // register routes
-fastify.register(require("fastify-swagger"), {
-    exposeRoute: true,
-    routePrefix: "/docs",
-    swagger: {
-        info: {
-            title: "ارز دیجیتال-api",
+fastify
+    .register(require("fastify-swagger"), {
+        exposeRoute: true,
+        routePrefix: "/docs",
+        swagger: {
+            info: {
+                title: "ارز دیجیتال-api",
+            },
         },
-    },
-});
-fastify.register(itemsRoutes, {
-    prefix: "/api/v1"
-});
-// end line of register routes
+    })
+    .register(autoload,{
+        dir:path.join(__dirname+ '/../','routes'),
+        options: {prefix: '/api/v1'},
+        ignorePattern: /.*(test|spec).js/
+    })
+    .register(require('fastify-cors'), (instance) => (req, callback) => {
+        let corsOptions;
+        // do not include CORS headers for requests from localhost
+        if (/localhost/.test) {
+            corsOptions = { origin: false }
+        } else {
+            corsOptions = { origin: true }
+        }
+        callback(null, corsOptions) // callback expects two parameters: error and options
+    })
+
+
 // server starter
 const start = async () => {
     try {
