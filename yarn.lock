@@ -206,7 +206,7 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-bson@^4.2.2, bson@^4.5.1:
+bson@^4.2.2, bson@^4.5.1, bson@^4.5.2:
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/bson/-/bson-4.5.2.tgz#567b4ee94372d5284a4d6c47fb6e1cc711ae76ba"
   integrity sha512-8CEMJpwc7qlQtrn2rney38jQSEeMar847lz0LyitwRmVknAW8iHXrzW4fTjHfyWm0E3sukyD/zppdH+QU1QefA==

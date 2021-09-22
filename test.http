@@ -5,14 +5,17 @@ GET http://localhost:5000/ HTTP/1.1
 GET http://localhost:5000/coins HTTP/1.1
 
 ### GET single item
-GET http://localhost:5000/coin/1 HTTP/1.1
-
+GET http://localhost:5000/coin HTTP/1.1
+Content-Type: application/json;
+{
+  "name": "BNB"
+}
 ### ADD item
 POST http://localhost:5000/coin HTTP/1.1
 content-type: application/json;
 
 {
-  "name": "DOG"
+  "name": "ETH"
 }
 
 ### DELETE item

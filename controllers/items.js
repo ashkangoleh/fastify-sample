@@ -1,20 +1,21 @@
 const axios = require("axios");
-let items = require("../views/items").items;
-const coinData = require("../models/schemas");
+const coinData = require("../models/coins");
+const redis = require("../config/cache");
+const column_data_id_2 = require('./manipulated_column_data')
 
 function one_year_ago() {
     return new Date(
         new Date().setFullYear(
             new Date().getFullYear() - 1,
-            new Date().getMonth() + 1,
-            1
+            new Date().getMonth() + 1, 1
         )
-    ).getTime();
+    ).getTime().toLocaleString().split(",").join('');
 }
 
 function nowDateLive() {
-    return new Date().getTime();
+    return new Date().getTime().toLocaleString().split(",").join('');
 }
+
 
 // sort function for duplicate indexes
 const uniqSort = (arr = []) => {
@@ -30,29 +31,20 @@ const uniqSort = (arr = []) => {
 };
 // end of line sort function for duplicate indexes
 
-async function makeGetRequest(url) {
-    let response = await axios.get(url);
-    return response
-}
-
-
-const periodHistoryAmount = async(request, response) => {
-    const historyUrl = `https://api.arzdigital.com/history/?gethistory=2&from=${one_year_ago()}&to=${nowDateLive()}`
-    const history = await makeGetRequest(historyUrl)
-
+const periodHistoryAmount = async (request, response) => {
+    const historyUrl = `https://api.arzdigital.com/history/?gethistory=2&from=${one_year_ago()}&to=${nowDateLive()}`;
+    const history = await axios.get(historyUrl);
     let data = history.data["price"];
     let modify_data = [];
     let date_check = [];
     let modify_duplicate_result = [];
     let semi_final_result = [];
     data.forEach((element) => {
-        if (element[0] >= one_year_ago()) {
+        if (element[0] > one_year_ago()) {
             modify_data.push(element);
-
             modify_data.forEach((element) => {
                 const Day = new Date(element[0]).toUTCString();
                 const fullTimeCheck = Day.split(" ")[1] + Day.split(" ")[2];
-                // const fullTimeCheck = Day.split(' ')[2]
                 date_check.push(fullTimeCheck, element[1]);
             });
         }
@@ -73,89 +65,114 @@ const periodHistoryAmount = async(request, response) => {
             break;
         }
     }
-
-    response.send({
-        semi_final_result: semi_final_result,
+    const finalData = column_data_id_2(semi_final_result)
+    response.code(200).send({
+        'status': 'success',
+        data: finalData,
     });
 };
 
-const getItems = async(request, response) => {
-    const allCoins = await coinData.find({ $exists: true });
-
-    if (
-        allCoins === [] ||
-        allCoins === "[]" ||
-        allCoins === {} ||
-        allCoins === null
-    ) {
-        // if (allCoins === null) {
-        response.code(404).send({ result: "not found" });
+const getItems = async (request, response) => {
+    const allCoins = await coinData.find({$exists: true});
+    //-------------------------------------
+    // const setFromCache = redis.setex("allCoins", 30, `${allCoins}`);
+    //-------------------------------------------
+    if (allCoins.length === 0) {
+        response.code(404).send({result: "not found"});
     } else {
+        // const getFromCache = redis.get("allCoins", (err, val) => {
+        // if (err) {
+        // response.send(err);
+        // return
+        // }
+        // response.code(200).send(val);
+        // })
         response.code(200).send(allCoins);
     }
 };
+
 // get single items handler
-const getSingleItem = async(request, response) => {
-    const { id } = request.params;
-    const allCoins = await coinData.find({ name: id });
-    // response.send(allCoins[allCoins.length - 1])
-    response.send(allCoins[0]);
-    // response.send(item)
+const getSingleItem = async (request, response) => {
+    const {name} = request.body;
+    const filter = {name: name};
+    let singleCoin = await coinData.find(filter);
+    if (singleCoin.length === 0) {
+        response.code(404).send({
+            status: "error",
+            data: `${name}`,
+            message: "not found",
+        });
+    } else {
+        response.code(200).send(singleCoin);
+    }
 };
+
 // add item handler
-const addItem = (request, response) => {
-    const { name } = request.body;
+const addItem = async (request, response) => {
+    const {name} = request.body;
+    const filter = await coinData.find({name: name})
     const data = new coinData({
         name: name,
     });
-    data.save();
-    response.code(201).send(data);
+    if (!filter.length) {
+        await data.save();
+        response.code(201).send(data);
+    } else {
+        response.code(409).send({
+            'status': 'error',
+            'data': `${name}`,
+            'message': `'${name}' already exist`
+        })
+    }
 };
 // delete item handler
-const deleteItem = async(request, response) => {
-    // const {id} = request.params
-    // if ({id} in items) {
-    //     items = items.filter(item => item.id !== id)
-    //     response.send({
-    //         message: `item ${id} has been removed`
-    //     })
-    // } else {
-    //     response.send({
-    //         message: `item  not found`
-    //     })
-    // }
-    // const {id} = request.params
-    const { name } = request.body;
-    // response.send(allCoins[allCoins.length - 1])
-    let allCoins = await coinData.find({ name: name });
-    if (
-        allCoins[0] === "{}" ||
-        allCoins[0] === "[]" ||
-        allCoins[0] === undefined
-    ) {
-        response.send(`${name} not found`);
+const deleteItem = async (request, response) => {
+    const {name} = request.body;
+    let singleCoin = await coinData.find({name: name});
+    if (!singleCoin.length) {
+        response.code().send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
     } else {
-        let allCoins = await coinData.find({ name: name }).remove().exec();
-        response.send(`${name} has been removed`);
+        let delSingleCoin = await coinData.deleteOne({name: name})
+        let result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`}
+        response.code(200).header('Content-Type', 'application/json; charset=utf-8').send(result);
     }
 };
 // update item handler
-const updateItem = async(request, response) => {
-    const { id } = request.body;
-    const { name, updated_name } = request.body;
-    const filter = { name: name };
-    const update = { name: updated_name };
-    let doc = await coinData.findOneAndUpdate(filter, update, {
-        returnOriginal: false
-    });
-    doc.save();
-    console.log(update)
-    console.log(name)
-        // items = items.map(item => (item.id === id ? {id, name} : item)) // if item.id exists return id,name else old item
-        // item = items.find((item) => item.id === id)
-    response.send(doc.name);
-};
+const updateItem = async (request, response) => {
+    const {name, updated_name} = request.body;
+    const filter = {name: name};
+    const update = {name: updated_name};
+    let nameFilter = await coinData.find(update)
 
+    if (!nameFilter.length) {
+        let doc = await coinData.findOneAndUpdate(filter, update, {
+            returnOriginal: false,
+            $exists: true,
+        });
+        if (doc != null) {
+            doc.save();
+            response.code(201).send({
+                status: "success",
+                data: `${updated_name}`,
+                message:`${name} updated to ${updated_name}`
+            });
+        } else {
+            response.code(200).send({
+                status: "error",
+                data: `${name} not found`,
+                message: `'${name}' not found `,
+            });
+
+        }
+    } else {
+        response.code(200).send({
+            status: "error",
+            data: `${updated_name}`,
+            message: `'${updated_name}' already taken `,
+        });
+
+    }
+}
 module.exports = {
     getItems,
     getSingleItem,

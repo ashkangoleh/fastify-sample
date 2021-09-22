@@ -19,6 +19,7 @@
         "uuid": "^8.3.2"
     },
     "devDependencies": {
+        "bson": "^4.5.2",
         "cors": "^2.8.5",
         "fastify-express": "^0.3.3",
         "nodemon": "^2.0.12"
