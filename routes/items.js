@@ -104,9 +104,9 @@ const updateItemOpts = {
     },
     handler: updateItem,
 };
-const historyOts = {
-    handler: periodHistoryAmount,
-};
+// const historyOts = {
+//     handler: periodHistoryAmount,
+// };
 
 
 function itemRoutes(app, options, done) {
@@ -124,7 +124,7 @@ function itemRoutes(app, options, done) {
     app.delete("/coin", deleteItemOpts); // body request {"name":"name"}
     // UPDATE item
     app.put("/coin", updateItemOpts);
-    app.get("/", historyOts);
+    // app.get("/", historyOts);
     done();
 
 }
