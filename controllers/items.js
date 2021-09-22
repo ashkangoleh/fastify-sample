@@ -130,7 +130,7 @@ const deleteItem = async (request, response) => {
     const {name} = request.body;
     let singleCoin = await coinData.find({name: name});
     if (!singleCoin.length) {
-        response.code().send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
+        response.code(404).send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
     } else {
         let delSingleCoin = await coinData.deleteOne({name: name})
         let result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`}

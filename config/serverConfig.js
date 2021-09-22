@@ -16,10 +16,12 @@ fastify.register(require("fastify-swagger"), {
         },
     },
 });
-fastify.register(itemsRoutes);
+fastify.register(itemsRoutes, {
+    prefix: "/api/v1"
+});
 // end line of register routes
 // server starter
-const start = async() => {
+const start = async () => {
     try {
         await fastify.listen(PORT, '0.0.0.0');
     } catch (error) {
@@ -27,9 +29,9 @@ const start = async() => {
         process.exit(1);
     }
 };
-// start().then(() => console.log(fastify.log))
-start();
-// end line of server starter
+
+start().then(r => r);
+
 
 module.exports = {
     app: fastify,
