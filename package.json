@@ -7,7 +7,7 @@
         "start": "node server",
         "dev": "nodemon server"
     },
-    "keywords": [],
+    "keywords": ["fastify", "CRUD", "javascript","nodejs"],
     "author": "ashkan goleh pour",
     "license": "ISC",
     "dependencies": {
