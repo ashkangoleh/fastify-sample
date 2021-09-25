@@ -32,11 +32,15 @@ fastify
         callback(null, corsOptions) // callback expects two parameters: error and options
     })
 
+// fastify websocket
 
+// fastify websocket  -endln
 // server starter
 const start = async () => {
     try {
         await fastify.listen(PORT, '0.0.0.0');
+        //fastify.log.info(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
+        console.log(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
     } catch (error) {
         fastify.log.error(error);
         process.exit(1);

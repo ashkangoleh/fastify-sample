@@ -17,14 +17,19 @@ const getItems = async (request, response) => {
         // }
         // response.code(200).send(val);
         // })
-        response.code(200).send(allCoins);
+        response.code(200).send({
+            'status':'success',
+            'data_count' :allCoins.length,
+            'data':allCoins
+        });
     }
 };
 
 // get single items handler
 const getSingleItem = async (request, response) => {
     const {name} = request.body;
-    const filter = {name: name};
+    const Regex = new RegExp(name, 'i');
+    const filter = {name: {"$regex": Regex}};
     let singleCoin = await coinData.find(filter);
     if (singleCoin.length === 0) {
         response.code(404).send({
@@ -40,11 +45,13 @@ const getSingleItem = async (request, response) => {
 // add item handler
 const addItem = async (request, response) => {
     const {name} = request.body;
-    const filter = await coinData.find({name: name})
+    const Regex = new RegExp(name, 'i');
+    const filter = {name: {"$regex": Regex}};
+    const preCheck = await coinData.find(filter)
     const data = new coinData({
-        name: name,
+        name: name.toUpperCase(),
     });
-    if (!filter.length) {
+    if (!preCheck.length) {
         await data.save();
         response.code(201).send(data);
     } else {
@@ -58,11 +65,13 @@ const addItem = async (request, response) => {
 // delete item handler
 const deleteItem = async (request, response) => {
     const {name} = request.body;
-    let singleCoin = await coinData.find({name: name});
+    const Regex = new RegExp(name, 'i');
+    const filter = {name: {"$regex": Regex}};
+    let singleCoin = await coinData.find(filter);
     if (!singleCoin.length) {
         response.code(404).send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
     } else {
-        let delSingleCoin = await coinData.deleteOne({name: name})
+        let delSingleCoin = await coinData.deleteOne(filter)
         let result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`}
         response.code(200).header('Content-Type', 'application/json; charset=utf-8').send(result);
     }
@@ -70,8 +79,9 @@ const deleteItem = async (request, response) => {
 // update item handler
 const updateItem = async (request, response) => {
     const {name, updated_name} = request.body;
-    const filter = {name: name};
-    const update = {name: updated_name};
+    const Regex = new RegExp(name, 'i');
+    const filter = {name: {"$regex": Regex}};
+    const update = {name: updated_name.toUpperCase()};
     let nameFilter = await coinData.find(update)
 
     if (!nameFilter.length) {
@@ -84,7 +94,7 @@ const updateItem = async (request, response) => {
             response.code(201).send({
                 status: "success",
                 data: `${updated_name}`,
-                message:`${name} updated to ${updated_name}`
+                message: `${name} updated to ${updated_name}`
             });
         } else {
             response.code(200).send({
@@ -109,5 +119,4 @@ module.exports = {
     addItem,
     deleteItem,
     updateItem,
-    // periodHistoryAmount,
 };
