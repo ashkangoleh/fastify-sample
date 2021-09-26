@@ -1,39 +1,69 @@
 const fastify = require("fastify")({
-    logger: true,
+    // logger: true,
     // http2: true
 });
-const autoload = require('fastify-autoload')
-const path = require('path')
+const autoload = require('fastify-autoload');
+const fastifySwagger = require('fastify-swagger');
+const fastifyCors = require('fastify-cors');
+const path = require('path');
 const PORT = 5000;
+const axios = require('axios')
 // register routes
+
 fastify
-    .register(require("fastify-swagger"), {
+    .register(fastifySwagger, {
         exposeRoute: true,
-        routePrefix: "/docs",
+        routePrefix: "/",
         swagger: {
             info: {
                 title: "ارز دیجیتال-api",
+                description: "simple CRUD",
+                version: "1.0.0"
             },
-        },
+            host: 'localhost:5000',
+            consumes: ['application/json','application/plaintext'],
+            produces: ['application/json','application/plaintext'],
+            // schemes: ['','http','https']
+        }
     })
-    .register(autoload,{
-        dir:path.join(__dirname+ '/../','routes'),
+    .register(autoload, {
+        dir: path.join(__dirname + '/../', 'routes'),
         options: {prefix: '/api/v1'},
         ignorePattern: /.*(test|spec).js/
     })
-    .register(require('fastify-cors'), (instance) => (req, callback) => {
+    .register(fastifyCors, (instance) => (req, callback) => {
         let corsOptions;
         // do not include CORS headers for requests from localhost
-        if (/localhost/.test) {
-            corsOptions = { origin: false }
+        if (!/localhost/.test) { //remove ! if need to block localhost requests
+            corsOptions = {origin: false}
         } else {
-            corsOptions = { origin: true }
+            corsOptions = {origin: true}
         }
         callback(null, corsOptions) // callback expects two parameters: error and options
     })
 
-// fastify websocket
 
+// fastify websocket
+fastify.register(require('fastify-websocket'), {
+    options: {maxPayload: 1048576}
+})
+
+
+fastify.route({
+    method: 'GET',
+    url: '/ws/',
+    handler: async(req, reply) => {
+        reply.setEncoding('utf8')
+        let msg = req.params
+        if (msg.length) {
+        }
+    },
+    wsHandler: async (conn, req) => {
+        conn.setEncoding('utf8')
+            let joke = await axios.get('https://api.chucknorris.io/jokes/random').then(r => r.data)
+            conn.socket.send(joke['value'])
+    }
+})
 // fastify websocket  -endln
 // server starter
 const start = async () => {

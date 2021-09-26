@@ -18,9 +18,9 @@ const getItems = async (request, response) => {
         // response.code(200).send(val);
         // })
         response.code(200).send({
-            'status':'success',
-            'data_count' :allCoins.length,
-            'data':allCoins
+            'status': 'success',
+            'data_count': allCoins.length,
+            'data': allCoins
         });
     }
 };
@@ -38,14 +38,17 @@ const getSingleItem = async (request, response) => {
             message: "not found",
         });
     } else {
-        response.code(200).send(singleCoin);
+        response.code(200).send({
+            status: "success",
+            data: singleCoin,
+        });
     }
 };
 
 // add item handler
 const addItem = async (request, response) => {
     const {name} = request.body;
-    const Regex = new RegExp(name, 'i');
+    const Regex = new RegExp(name, '');
     const filter = {name: {"$regex": Regex}};
     const preCheck = await coinData.find(filter)
     const data = new coinData({
@@ -64,53 +67,58 @@ const addItem = async (request, response) => {
 };
 // delete item handler
 const deleteItem = async (request, response) => {
+    let result;
+    let delSingleCoin;
     const {name} = request.body;
     const Regex = new RegExp(name, 'i');
     const filter = {name: {"$regex": Regex}};
     let singleCoin = await coinData.find(filter);
-    if (!singleCoin.length) {
-        response.code(404).send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
-    } else {
-        let delSingleCoin = await coinData.deleteOne(filter)
-        let result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`}
+    if (singleCoin.length) {
+        delSingleCoin = await coinData.deleteOne(filter);
+        result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`};
         response.code(200).header('Content-Type', 'application/json; charset=utf-8').send(result);
+    } else {
+        response.code(404).send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
     }
 };
 // update item handler
 const updateItem = async (request, response) => {
-    const {name, updated_name} = request.body;
+    let {name, updated_name} = request.body;
     const Regex = new RegExp(name, 'i');
     const filter = {name: {"$regex": Regex}};
     const update = {name: updated_name.toUpperCase()};
-    let nameFilter = await coinData.find(update)
-
-    if (!nameFilter.length) {
-        let doc = await coinData.findOneAndUpdate(filter, update, {
-            returnOriginal: false,
-            $exists: true,
-        });
-        if (doc != null) {
-            doc.save();
-            response.code(201).send({
-                status: "success",
+    const nameFilter = await coinData.find(update)
+    if (name !== '' && updated_name !== '') {
+        if (nameFilter.length) {
+            response.code(409).send({
+                status: "error",
                 data: `${updated_name}`,
-                message: `${name} updated to ${updated_name}`
+                message: `'${updated_name}' already taken `,
             });
         } else {
-            response.code(200).send({
-                status: "error",
-                data: `${name} not found`,
-                message: `'${name}' not found `,
-            });
+            let doc = await coinData.findOneAndUpdate(filter, update, {
+                returnOriginal: false,
+                $exists: true,
+            })
+            if (doc == null) {
+                response.code(200).send({
+                    status: "error",
+                    data: `${name} not found`,
+                    message: `'${name}' not found `,
+                });
 
+            } else {
+                doc.save();
+                response.code(201).send({
+                    status: "success",
+                    message: `${name} updated to ${updated_name}`
+                });
+            }
         }
     } else {
-        response.code(200).send({
-            status: "error",
-            data: `${updated_name}`,
-            message: `'${updated_name}' already taken `,
-        });
-
+        response.code(404).send({
+            message: "one/all contents are empty"
+        })
     }
 }
 module.exports = {
