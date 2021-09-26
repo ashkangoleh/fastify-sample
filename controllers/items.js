@@ -48,8 +48,7 @@ const getSingleItem = async (request, response) => {
 // add item handler
 const addItem = async (request, response) => {
     const {name} = request.body;
-    const Regex = new RegExp(name, '');
-    const filter = {name: {"$regex": Regex}};
+    const filter = {name: {"$in": name}};
     const preCheck = await coinData.find(filter)
     const data = new coinData({
         name: name.toUpperCase(),
@@ -70,8 +69,7 @@ const deleteItem = async (request, response) => {
     let result;
     let delSingleCoin;
     const {name} = request.body;
-    const Regex = new RegExp(name, 'i');
-    const filter = {name: {"$regex": Regex}};
+    const filter = {name: {"$in": name}};
     let singleCoin = await coinData.find(filter);
     if (singleCoin.length) {
         delSingleCoin = await coinData.deleteOne(filter);
@@ -84,8 +82,7 @@ const deleteItem = async (request, response) => {
 // update item handler
 const updateItem = async (request, response) => {
     let {name, updated_name} = request.body;
-    const Regex = new RegExp(name, 'i');
-    const filter = {name: {"$regex": Regex}};
+    const filter = {name: {"$in": name}};
     const update = {name: updated_name.toUpperCase()};
     const nameFilter = await coinData.find(update)
     if (name !== '' && updated_name !== '') {
