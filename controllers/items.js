@@ -118,10 +118,58 @@ const updateItem = async (request, response) => {
         })
     }
 }
+// removeDuplicates data from faker
+const removeDuplicates = async (request, response) => {
+    let duplicates = []
+    let data = await coinData.aggregate([
+            {
+                $match: {
+                    name: {"$ne": ''}  // discard selection criteria
+                }
+            },
+            {
+                $group: {
+                    _id: {name: "$name"}, // can be grouped on multiple properties
+                    dups: {"$addToSet": "$_id"},
+                    count: {"$sum": 1}
+                }
+            },
+            {
+                $match: {
+                    count: {"$gt": 1}    // Duplicates considered as count greater than one
+                }
+            }
+        ],
+        {allowDiskUse: true}       // For faster processing if set is larger
+    )
+    data.forEach(function (doc) {
+        doc.dups.shift();      // First element skipped for deleting
+        doc.dups.forEach(function (dupId) {
+                duplicates.push(dupId);   // Getting all duplicate ids
+            }
+        )
+    })
+    if(duplicates.length){
+        await coinData.deleteMany({_id: {$in: duplicates}})
+        response.code(200).send({
+            status: 'success',
+            duplicate_data: `${duplicates ? duplicates.length:0}`,
+            message: `${duplicates.length} duplicates removed`
+        })
+    }else{
+        response.code(404).send({
+            status: 'error',
+            duplicate_data: `${duplicates ? duplicates.length:0}`,
+            message: `duplicates not found`
+        })
+    }
+
+}
 module.exports = {
     getItems,
     getSingleItem,
     addItem,
     deleteItem,
     updateItem,
+    removeDuplicates,
 };

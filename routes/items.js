@@ -6,6 +6,7 @@ const {
     deleteItem,
     updateItem,
     // periodHistoryAmount,
+    removeDuplicates,
 } = require("../controllers/items");
 const Items = {
     type: "object",
@@ -150,6 +151,24 @@ const updateItemOpts = {
     },
     handler: updateItem,
 };
+const removeDuplicatesOpts = {
+    schema: {
+        response: {
+            200:{
+                status: {type: "string",example: 'success'},
+                duplicate_data: {type: "integer"},
+                message: {type: "string",example: `duplicates removed`}
+            },
+            404:{
+                status: {type: "string",example: 'success'},
+                duplicate_data: {type: "integer"},
+                message: {type: "string",example: `duplicates removed`}
+            }
+        }
+    },
+    handler:removeDuplicates,
+
+}
 // const historyOts = {
 //     handler: periodHistoryAmount,
 // };
@@ -170,6 +189,7 @@ function itemRoutes(app, options, done) {
     app.delete("/coin", deleteItemOpts); // body request {"name":"name"}
     // UPDATE item
     app.put("/coin", updateItemOpts);
+    app.get("/rm",removeDuplicatesOpts);
     // app.get("/", historyOts);
     done();
 
