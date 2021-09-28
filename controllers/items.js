@@ -1,7 +1,7 @@
 const axios = require("axios");
 const coinData = require("../models/coins");
 const redis = require("../config/cache");
-
+const fk=require('faker');
 const getItems = async (request, response) => {
     const allCoins = await coinData.find({$exists: true});
     //-------------------------------------
@@ -63,6 +63,19 @@ const addItem = async (request, response) => {
             'message': `'${name}' already exist`
         })
     }
+    //           faker data into add url
+    // for (let i = 0; i < 1000; i++) {
+    //     let fakers = new coinData({
+    //         name: fk.name.firstName(),
+    //     });
+    //     if(!preCheck.length){
+    //         fakers.save((err, data) => {
+    //             if (err) {
+    //                 console.log(err);
+    //             }
+    //         });
+    //     }
+    // }
 };
 // delete item handler
 const deleteItem = async (request, response) => {
@@ -78,6 +91,7 @@ const deleteItem = async (request, response) => {
     } else {
         response.code(404).send({'status': 'error', 'data': `${name}`, 'message': `${name} not found `});
     }
+
 };
 // update item handler
 const updateItem = async (request, response) => {
