@@ -1,7 +1,7 @@
 const axios = require("axios");
 const coinData = require("../models/coins");
 const redis = require("../config/cache");
-const fk=require('faker');
+const fk = require('faker');
 const getItems = async (request, response) => {
     const allCoins = await coinData.find({$exists: true});
     //-------------------------------------
@@ -27,11 +27,11 @@ const getItems = async (request, response) => {
 
 // get single items handler
 const getSingleItem = async (request, response) => {
-    const {name} = request.body;
-    const Regex = new RegExp(name, 'i');
-    const filter = {name: {"$regex": Regex}};
+    let {name} = request.body;
+    name = name.toUpperCase();
+    const filter = {name: {$in: name}};
     let singleCoin = await coinData.find(filter);
-    if (singleCoin.length === 0) {
+    if (!singleCoin.length) {
         response.code(404).send({
             status: "error",
             data: `${name}`,
@@ -47,11 +47,12 @@ const getSingleItem = async (request, response) => {
 
 // add item handler
 const addItem = async (request, response) => {
-    const {name} = request.body;
+    let {name} = request.body;
+    name = name.toUpperCase()
     const filter = {name: {"$in": name}};
     const preCheck = await coinData.find(filter)
     const data = new coinData({
-        name: name.toUpperCase(),
+        name: name,
     });
     if (!preCheck.length) {
         await data.save();
@@ -63,19 +64,18 @@ const addItem = async (request, response) => {
             'message': `'${name}' already exist`
         })
     }
-    //           faker data into add url
+    // // faker data into add url
+    // let fake_name = fk.name.firstName()
     // for (let i = 0; i < 1000; i++) {
     //     let fakers = new coinData({
-    //         name: fk.name.firstName(),
+    //         name: fake_name.toUpperCase()
     //     });
-    //     if(!preCheck.length){
     //         fakers.save((err, data) => {
     //             if (err) {
     //                 console.log(err);
     //             }
     //         });
     //     }
-    // }
 };
 // delete item handler
 const deleteItem = async (request, response) => {
@@ -163,17 +163,17 @@ const removeDuplicates = async (request, response) => {
             }
         )
     })
-    if(duplicates.length){
+    if (duplicates.length) {
         await coinData.deleteMany({_id: {$in: duplicates}})
         response.code(200).send({
             status: 'success',
-            duplicate_data: `${duplicates ? duplicates.length:0}`,
+            duplicate_data: `${duplicates ? duplicates.length : 0}`,
             message: `${duplicates.length} duplicates removed`
         })
-    }else{
+    } else {
         response.code(404).send({
             status: 'error',
-            duplicate_data: `${duplicates ? duplicates.length:0}`,
+            duplicate_data: `${duplicates ? duplicates.length : 0}`,
             message: `duplicates not found`
         })
     }

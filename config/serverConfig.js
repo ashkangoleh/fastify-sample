@@ -2,12 +2,14 @@ const fastify = require("fastify")({
     // logger: true,
     // http2: true
 });
+require('dotenv').config();
 const autoload = require('fastify-autoload');
 const fastifySwagger = require('fastify-swagger');
 const fastifyCors = require('fastify-cors');
 const path = require('path');
-const PORT = 5000;
+const PORT = process.env.PORT;
 const axios = require('axios')
+
 // register routes
 
 fastify
@@ -41,8 +43,6 @@ fastify
         }
         callback(null, corsOptions) // callback expects two parameters: error and options
     })
-
-
 // fastify websocket
 fastify.register(require('fastify-websocket'), {
     options: {maxPayload: 1048576}
@@ -68,11 +68,12 @@ fastify.route({
 // server starter
 const start = async () => {
     try {
-        await fastify.listen(PORT, '0.0.0.0');
+        await fastify.listen(PORT, process.env.SERVER_IP_ADDRESS);
         //fastify.log.info(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
         console.log(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
     } catch (error) {
         fastify.log.error(error);
+        console.log(fastify.log.error(error))
         process.exit(1);
     }
 };

@@ -19,19 +19,20 @@
         "axios": "^0.21.4",
         "dependency": "0.0.1",
         "faker": "^5.5.3",
-        "fastify": "^3.21.1",
+        "fastify": "^3.21.6",
         "fastify-autoload": "^3.9.0",
         "fastify-cors": "^6.0.2",
-        "fastify-swagger": "^4.12.0",
+        "fastify-swagger": "^4.12.2",
         "fastify-websocket": "^4.0.0",
         "middie": "^5.3.0",
-        "mongoose": "^6.0.6",
+        "mongoose": "^6.0.8",
         "uuid": "^8.3.2"
     },
     "devDependencies": {
         "bson": "^4.5.2",
         "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
         "fastify-express": "^0.3.3",
-        "nodemon": "^2.0.12"
+        "nodemon": "^2.0.13"
     }
 }
