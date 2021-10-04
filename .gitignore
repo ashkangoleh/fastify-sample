@@ -2,3 +2,5 @@
 node_modules
 ./controllers/manipulated_column_data.js
 .env
+socket
+swagger.json

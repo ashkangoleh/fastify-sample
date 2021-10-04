@@ -43,6 +43,7 @@ fastify
         }
         callback(null, corsOptions) // callback expects two parameters: error and options
     })
+    ///////Plugins
     //public plugin
     .register(fastifyStatic, {
         root: path.join(__dirname, '../public'),
@@ -54,6 +55,7 @@ fastify
         prefix: '/static/',
         decorateReply: false
     })
+    ///////End line of Plugins
 // fastify websocket
 fastify.register(require('fastify-websocket'), {
     options: {maxPayload: 1048576}
