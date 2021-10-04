@@ -1,9 +1,9 @@
 const axios = require("axios");
-const coinData = require("../models/coins");
+const {coin_data,coin_market} = require("../models/coin_model");
 const redis = require("../config/cache");
 const fk = require('faker');
 const getItems = async (request, response) => {
-    const allCoins = await coinData.find({$exists: true});
+    const allCoins = await coin_data.find({$exists: true});
     //-------------------------------------
     // const setFromCache = redis.setex("allCoins", 30, `${allCoins}`);
     //-------------------------------------------
@@ -24,13 +24,12 @@ const getItems = async (request, response) => {
         });
     }
 };
-
 // get single items handler
 const getSingleItem = async (request, response) => {
     let {name} = request.body;
     name = name.toUpperCase();
     const filter = {name: {$in: name}};
-    let singleCoin = await coinData.find(filter);
+    let singleCoin = await coin_data.find(filter);
     if (!singleCoin.length) {
         response.code(404).send({
             status: "error",
@@ -40,18 +39,17 @@ const getSingleItem = async (request, response) => {
     } else {
         response.code(200).send({
             status: "success",
-            data: singleCoin,
+            name: singleCoin[0]['name'],
         });
     }
 };
-
 // add item handler
 const addItem = async (request, response) => {
     let {name} = request.body;
     name = name.toUpperCase()
     const filter = {name: {"$in": name}};
-    const preCheck = await coinData.find(filter)
-    const data = new coinData({
+    const preCheck = await coin_data.find(filter)
+    const data = new coin_data({
         name: name,
     });
     if (!preCheck.length) {
@@ -67,7 +65,7 @@ const addItem = async (request, response) => {
     // // faker data into add url
     // let fake_name = fk.name.firstName()
     // for (let i = 0; i < 1000; i++) {
-    //     let fakers = new coinData({
+    //     let fakers = new coin_data({
     //         name: fake_name.toUpperCase()
     //     });
     //         fakers.save((err, data) => {
@@ -83,9 +81,9 @@ const deleteItem = async (request, response) => {
     let delSingleCoin;
     const {name} = request.body;
     const filter = {name: {"$in": name}};
-    let singleCoin = await coinData.find(filter);
+    let singleCoin = await coin_data.find(filter);
     if (singleCoin.length) {
-        delSingleCoin = await coinData.deleteOne(filter);
+        delSingleCoin = await coin_data.deleteOne(filter);
         result = {status: 'success', data: delSingleCoin['deletedCount'], message: `${name} has been removed`};
         response.code(200).header('Content-Type', 'application/json; charset=utf-8').send(result);
     } else {
@@ -98,7 +96,7 @@ const updateItem = async (request, response) => {
     let {name, updated_name} = request.body;
     const filter = {name: {"$in": name}};
     const update = {name: updated_name.toUpperCase()};
-    const nameFilter = await coinData.find(update)
+    const nameFilter = await coin_data.find(update)
     if (name !== '' && updated_name !== '') {
         if (nameFilter.length) {
             response.code(409).send({
@@ -107,7 +105,7 @@ const updateItem = async (request, response) => {
                 message: `'${updated_name}' already taken `,
             });
         } else {
-            let doc = await coinData.findOneAndUpdate(filter, update, {
+            let doc = await coin_data.findOneAndUpdate(filter, update, {
                 returnOriginal: false,
                 $exists: true,
             })
@@ -135,7 +133,7 @@ const updateItem = async (request, response) => {
 // removeDuplicates data from faker
 const removeDuplicates = async (request, response) => {
     let duplicates = []
-    let data = await coinData.aggregate([
+    let data = await coin_data.aggregate([
             {
                 $match: {
                     name: {"$ne": ''}  // discard selection criteria
@@ -164,7 +162,7 @@ const removeDuplicates = async (request, response) => {
         )
     })
     if (duplicates.length) {
-        await coinData.deleteMany({_id: {$in: duplicates}})
+        await coin_data.deleteMany({_id: {$in: duplicates}})
         response.code(200).send({
             status: 'success',
             duplicate_data: `${duplicates ? duplicates.length : 0}`,

@@ -49,6 +49,14 @@ const getItemOpts = {
             required: ["name"],
         },
         response: {
+            200: {
+                description: 'Not Found Response',
+                type: "object",
+                properties: {
+                    status: {type: "string", example: 'success'},
+                    name: {type: "string"},
+                }
+            },
             404: {
                 description: 'Not Found Response',
                 type: "object",
@@ -105,21 +113,21 @@ const deleteItemOpts = {
         },
         response: {
             200: {
-                description:'Successful Response',
+                description: 'Successful Response',
                 type: "object",
                 properties: {
-                    status: {type: "string",example: 'success',},
-                    data: {type: "string",example: 'BTCUSDT'},
-                    message: {type: "string",example: 'BTCUSDT removed'},
+                    status: {type: "string", example: 'success',},
+                    data: {type: "string", example: 'BTCUSDT'},
+                    message: {type: "string", example: 'BTCUSDT removed'},
                 },
             },
             404: {
-                description:'Not Found Response',
+                description: 'Not Found Response',
                 type: "object",
                 properties: {
-                    status: {type: "string",example: 'error',},
-                    data: {type: "string",example: 'BTCUSDT'},
-                    message: {type: "string",example: 'BTCUSDT not found'},
+                    status: {type: "string", example: 'error',},
+                    data: {type: "string", example: 'BTCUSDT'},
+                    message: {type: "string", example: 'BTCUSDT not found'},
                 },
             },
         },
@@ -138,8 +146,8 @@ const updateItemOpts = {
         },
         response: {
             201: {
-                status: {type: "string",example: 'success'},
-                message: {type: "string",example: `BTC updated to BTCUSDT`}
+                status: {type: "string", example: 'success'},
+                message: {type: "string", example: `BTC updated to BTCUSDT`}
             },
             200: {
                 status: {type: "string"},
@@ -154,19 +162,19 @@ const updateItemOpts = {
 const removeDuplicatesOpts = {
     schema: {
         response: {
-            200:{
-                status: {type: "string",example: 'success'},
+            200: {
+                status: {type: "string", example: 'success'},
                 duplicate_data: {type: "integer"},
-                message: {type: "string",example: `duplicates removed`}
+                message: {type: "string", example: `duplicates removed`}
             },
-            404:{
-                status: {type: "string",example: 'success'},
+            404: {
+                status: {type: "string", example: 'success'},
                 duplicate_data: {type: "integer"},
-                message: {type: "string",example: `duplicates removed`}
+                message: {type: "string", example: `duplicates removed`}
             }
         }
     },
-    handler:removeDuplicates,
+    handler: removeDuplicates,
 
 }
 // const historyOts = {
@@ -175,6 +183,7 @@ const removeDuplicatesOpts = {
 
 
 function itemRoutes(app, options, done) {
+
     // GET all items
     app.get("/coins", getItemsOpts);
     // app.get("/coins", getItems);
@@ -189,7 +198,7 @@ function itemRoutes(app, options, done) {
     app.delete("/coin", deleteItemOpts); // body request {"name":"name"}
     // UPDATE item
     app.put("/coin", updateItemOpts);
-    app.get("/rm",removeDuplicatesOpts);
+    app.get("/rm", removeDuplicatesOpts);
     // app.get("/", historyOts);
     done();
 

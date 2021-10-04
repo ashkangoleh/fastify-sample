@@ -6,25 +6,25 @@ require('dotenv').config();
 const autoload = require('fastify-autoload');
 const fastifySwagger = require('fastify-swagger');
 const fastifyCors = require('fastify-cors');
+const fastifyStatic = require('fastify-static')
 const path = require('path');
 const PORT = process.env.PORT;
 const axios = require('axios')
 
 // register routes
-
 fastify
     .register(fastifySwagger, {
         exposeRoute: true,
-        routePrefix: "/",
+        routePrefix: "/docs",
         swagger: {
             info: {
-                title: "ارز دیجیتال-api",
+                title: "CRUD-api",
                 description: "simple CRUD",
                 version: "1.0.0"
             },
             host: 'localhost:5000',
-            consumes: ['application/json','application/plaintext'],
-            produces: ['application/json','application/plaintext'],
+            consumes: ['application/json', 'application/plaintext'],
+            produces: ['application/json', 'application/plaintext'],
             // schemes: ['','http','https']
         }
     })
@@ -43,6 +43,17 @@ fastify
         }
         callback(null, corsOptions) // callback expects two parameters: error and options
     })
+    //public plugin
+    .register(fastifyStatic, {
+        root: path.join(__dirname, '../public'),
+        prefix: '/public/'
+    })
+    //static plugin
+    .register(fastifyStatic, {
+        root: path.join(__dirname, '../static'),
+        prefix: '/static/',
+        decorateReply: false
+    })
 // fastify websocket
 fastify.register(require('fastify-websocket'), {
     options: {maxPayload: 1048576}
@@ -52,7 +63,7 @@ fastify.register(require('fastify-websocket'), {
 fastify.route({
     method: 'GET',
     url: '/ws/',
-    handler: async(req, reply) => {
+    handler: async (req, reply) => {
         reply.setEncoding('utf8')
         let msg = req.params
         if (msg.length) {
@@ -60,8 +71,8 @@ fastify.route({
     },
     wsHandler: async (conn, req) => {
         conn.setEncoding('utf8')
-            let joke = await axios.get('https://api.chucknorris.io/jokes/random').then(r => r.data)
-            conn.socket.send(joke['value'])
+        let joke = await axios.get('https://api.chucknorris.io/jokes/random').then(r => r.data)
+        conn.socket.send(joke['value'])
     }
 })
 // fastify websocket  -endln
@@ -69,7 +80,7 @@ fastify.route({
 const start = async () => {
     try {
         await fastify.listen(PORT, process.env.SERVER_IP_ADDRESS);
-        //fastify.log.info(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
+        // fastify.log.info(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
         console.log(`Server Started at http://${fastify.server.address().address}:${fastify.server.address().port}`)
     } catch (error) {
         fastify.log.error(error);
