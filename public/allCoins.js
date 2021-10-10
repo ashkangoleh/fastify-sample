@@ -2,17 +2,16 @@
 fetch('http://localhost:5000/api/v1/coins').then(response => response.json()).then(data => {
     data.data.forEach(element => {
         let node = document.createElement("p");       // Create a <p> node
-        let node_name = document.createElement("p");       // Create a <p> node
         let id_node = document.createElement('strong')
-        let name = document.createElement('strong')
+        let name_node = document.createElement('strong')
         let break_node = document.createElement('br')
-        id_node.innerHTML= `${element._id}`
-        name.innerHTML= `${element.name}`
-        node_name.appendChild(name);
+        id_node.innerHTML= "ID: " +`${element._id}`
+        name_node.innerHTML= "Name: " +`${element.name}`
         node.appendChild(id_node);
-        // node.appendChild(document.createElement('hr'));
-        document.getElementById('_id').append(node)
-        document.getElementById('_name').append(node_name)
+        node.appendChild(break_node)
+        node.appendChild(name_node);
+        node.appendChild(document.createElement('hr'));
+        document.getElementById('lists').append(node)
     })
 })
 //////////////////////////with jquery ajax

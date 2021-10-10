@@ -1,8 +1,7 @@
 'use strict';
 const mongoose = require("mongoose");
 // const dbUrl = `mongodb://${process.env.DB_ADDRESS}:${process.env.DB_PORT}/${process.env.DB_NAME}`
-const dbUrl = `mongodb://mongo:27017/test`
-
+const dbUrl = `mongodb://mongo:${process.env.DB_PORT}/${process.env.DB_NAME}`
 async function connect(uri, callback) {
     await mongoose.connect(uri, {
         useNewUrlParser: true
@@ -20,6 +19,3 @@ module.exports = {
     mongoose,
 
 }
-
-
-
