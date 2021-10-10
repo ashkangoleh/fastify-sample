@@ -1,5 +1,5 @@
 const fastify = require("fastify")({
-    // logger: true,
+    logger: true,
     // http2: true
 });
 require('dotenv').config();
@@ -77,6 +77,7 @@ fastify.route({
         conn.socket.send(joke['value'])
     }
 })
+
 // fastify websocket  -endln
 // server starter
 const start = async () => {

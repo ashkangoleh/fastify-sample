@@ -1,9 +1,19 @@
 const axios = require("axios");
-const {coin_data,coin_market} = require("../models/coin_model");
+const {coin_data, coin_market} = require("../models/coin_model");
 const redis = require("../config/cache");
 const fk = require('faker');
+const decorator = require('fastify')()
+decorator.decorate('coins', {
+    exists: true,
+    _id: 0,
+    __v: 0
+})
+
 const getItems = async (request, response) => {
-    const allCoins = await coin_data.find({$exists: true});
+    const allCoins = await coin_data.find({exists: decorator.coins.exists}, {
+        _id: decorator.coins._id,
+        __v: decorator.coins.__v
+    });
     //-------------------------------------
     // const setFromCache = redis.setex("allCoins", 30, `${allCoins}`);
     //-------------------------------------------
@@ -17,6 +27,7 @@ const getItems = async (request, response) => {
         // }
         // response.code(200).send(val);
         // })
+
         response.code(200).send({
             'status': 'success',
             'data_count': allCoins.length,
@@ -24,6 +35,7 @@ const getItems = async (request, response) => {
         });
     }
 };
+
 // get single items handler
 const getSingleItem = async (request, response) => {
     let {name} = request.body;
